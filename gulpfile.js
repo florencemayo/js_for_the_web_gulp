@@ -1,8 +1,8 @@
-const gulp = require('gulp');
-const jshint = require('gulp-jshint');
-const babel = require('gulp-babel');
-const uglify = require('gulp-uglify');
-const runSequence = require('run-sequence');
+var gulp = require('gulp');
+var jshint = require('gulp-jshint');
+var babel = require('gulp-babel');
+var uglify = require('gulp-uglify');
+var pump = require('pump');
 
 gulp.task('copyFiles', () => {
   
@@ -22,53 +22,20 @@ gulp.task('copyFiles', () => {
 });
 
 
-gulp.task('lintJS', () => {
-  return new Promise(function(resolve, reject) {
-    gulp.src('*.js')
-	    .pipe(jshint({
-	        esversion: 8
-	    }))
-	    .pipe(jshint.reporter('default'))
-		.pipe(gulp.dest('dist'));
 
-    resolve();
-    });
+gulp.task('processJS', function (cb) {
+  pump([
+        gulp.src('*.js'),
+        jshint({ esversion: 8 }),
+        jshint.reporter('default'),
+        babel({ presets: ['@babel/env'] }),
+        uglify(),
+        gulp.dest('dist')
+    ],
+    cb
+  );
 });
 
-
-gulp.task('minifyOldJS', () => {
-  return new Promise(function(resolve, reject) {
-    gulp.src('*.babel.js')
-	    .pipe(uglify())
-	    .pipe(gulp.dest('dist'));
-
-    resolve();
-    });
-});
-
-
-gulp.task('minifyCurrentJS', () => {
-  return new Promise(function(resolve, reject) {
-    gulp.src(['blog.js','functions.js'])
-	    .pipe(uglify())
-	    .pipe(gulp.dest('dist'));
-
-    resolve();
-    });
-});
-
-
-gulp.task('transpileJS', () => {
-  return new Promise(function(resolve, reject) {
-    gulp.src('*.js')
-        .pipe(babel({
-            presets: ['env']
-        }))
-        .pipe(gulp.dest('dist'));
-
-    resolve();
-    });
-});
 
 
 gulp.task('babelPolyfill', () => {
@@ -82,9 +49,9 @@ gulp.task('babelPolyfill', () => {
 
 
 gulp.task('watch', () => {
-  gulp.watch('*.js', ['lintJS', 'transpileJS']);
-  gulp.watch('*.babel.js', ['minifyOldJS']);
-  gulp.watch(['blog.js','functions.js'], ['minifyCurrentJS']);
+  gulp.watch('*.js', ['transpileJS']);
+  gulp.watch('*.js', ['lintJS']);
+  gulp.watch('*.js', ['minifyJS']);
   gulp.watch(['*.html',
 	  	'*.json',
 	  	'README.md',
@@ -94,7 +61,6 @@ gulp.task('watch', () => {
 });
 
 
-gulp.task('default', (callback) => {
-  runSequence(['copyFiles', 'lintJS', 'minifyOldJS', 'minifyCurrentJS', 'transpileJS', 'babelPolyfill', 'watch'], callback);
-});
+
+gulp.task('default', gulp.series('copyFiles', 'processJS', 'babelPolyfill'));
 
