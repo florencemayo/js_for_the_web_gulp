@@ -4,6 +4,25 @@ var babel = require('gulp-babel');
 var uglify = require('gulp-uglify');
 var pump = require('pump');
 
+var browserSync = require('browser-sync').create();
+
+gulp.task('browserSync', () => {
+  browserSync.init({
+    server: './dist',
+    port: 8080,
+    ui: {
+      port: 8081
+    }
+  });
+});
+
+
+function reload(done) {
+  browserSync.reload();
+  done();
+}
+
+
 gulp.task('copyFiles', () => {
   
 
@@ -58,9 +77,12 @@ gulp.task('watch', () => {
 	  	'.gitignore',
 	  	'./*node_modules/**/*',
 	  	'./*images/**/*'], ['copyFiles']);
+  gulp.watch('./dist/*.js', browserSync.reload);
+  gulp.watch('./dist/*.html', browserSync.reload);
 });
 
 
 
 gulp.task('default', gulp.series('copyFiles', 'processJS', 'babelPolyfill'));
+
 

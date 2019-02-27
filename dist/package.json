@@ -23,11 +23,15 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^8.0.5",
     "babel-preset-env": "^1.7.0",
+    "browser-sync": "^2.26.3",
     "gulp": "^4.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-jshint": "^2.1.0",
     "gulp-uglify": "^3.0.1",
     "jshint": "^2.10.1",
     "run-sequence": "^2.2.1"
+  },
+  "dependencies": {
+    "del": "^3.0.0"
   }
 }
